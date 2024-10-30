@@ -1,0 +1,14 @@
+#stream {
+  width: 640px;
+  height: 360px;
+  background-color: black;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}

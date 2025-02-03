@@ -1,63 +1,36 @@
-const ws = new WebSocket(`ws://${window.location.hostname}/ws`);
+let socket = new WebSocket("ws://" + window.location.host + ":81");
 
-function receiveStream() {
-  const url = `http://${window.location.hostname}/stream`;
+socket.onopen = function() {
+    console.log("✅ WebSocket conectado!");
+};
 
-  fetch(url)
-    .then(response => {
-      const reader = response.body.getReader();
-      let imageData = "";
+socket.onerror = function(error) {
+    console.error("❌ WebSocket error:", error);
+};
 
-      function readStream() {
-        reader.read().then(({ done, value }) => {
-          if (done) return;
+socket.onclose = function() {
+    console.warn("⚠️ WebSocket desconectado. Reconectando en 3 segundos...");
+    setTimeout(() => location.reload(), 3000);
+};
 
-          imageData += new TextDecoder().decode(value);
-
-          const jpegStart = imageData.indexOf("\r\n\r\n");
-          if (jpegStart !== -1) {
-            const imageBlob = new Blob([imageData.substring(jpegStart + 4)], { type: "image/jpeg" });
-            const imageUrl = URL.createObjectURL(imageBlob);
-
-            document.getElementById("stream").src = imageUrl;
-
-            imageData = "";
-          }
-
-          readStream();
-        });
-      }
-
-      readStream();
-    })
-    .catch(error => {
-      console.error("Error al recibir el stream:", error);
-    });
+function sendCommand(cmd) {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send(cmd);
+    } else {
+        console.warn("⏳ WebSocket no está listo. Estado:", socket.readyState);
+    }
 }
 
-receiveStream();
-
+// Capturar teclas WASD para control de motores
 document.addEventListener("keydown", (event) => {
-  const key = event.key.toLowerCase();
+    if (event.repeat) return;
+    let command = "";
+    if (event.key === "w") command = "forward";
+    else if (event.key === "s") command = "backward";
+    else if (event.key === "a") command = "left";
+    else if (event.key === "d") command = "right";
 
-  if (["w", "a", "s", "d"].includes(key)) {
-    ws.send(key);
-    console.log("Tecla enviada:", key);
-  }
+    if (command) sendCommand(command);
 });
 
-ws.onmessage = function (event) {
-  console.log("Mensaje recibido del servidor:", event.data);
-};
-
-ws.onerror = function (error) {
-  console.error("Error en WebSocket:", error);
-};
-
-ws.onopen = function () {
-  console.log("Conexión WebSocket establecida");
-};
-
-ws.onclose = function () {
-  console.log("Conexión WebSocket cerrada");
-};
+document.addEventListener("keyup", () => sendCommand("stop"));

@@ -8,32 +8,34 @@
 #include <ArduinoOTA.h>
 
 // Configuración WiFi
-const char *ssid = "Yeisonint-TLM";
+const char *ssid = "Yeisonint-M";
 const char *password = "23HZFVWV32AH8";
 
 // Pines de control para los motores
-#define M1 12
-#define M2 13
-#define M3 14
-#define M4 15
+#define M1 1
+#define M2 2
+#define M3 3
+#define M4 4
 
-#define PWDN_GPIO_NUM     32
+#define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
+#define XCLK_GPIO_NUM     10
+#define SIOD_GPIO_NUM     40
+#define SIOC_GPIO_NUM     39
 
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+#define Y9_GPIO_NUM       48
+#define Y8_GPIO_NUM       11
+#define Y7_GPIO_NUM       12
+#define Y6_GPIO_NUM       14
+#define Y5_GPIO_NUM       16
+#define Y4_GPIO_NUM       18
+#define Y3_GPIO_NUM       17
+#define Y2_GPIO_NUM       15
+#define VSYNC_GPIO_NUM    38
+#define HREF_GPIO_NUM     47
+#define PCLK_GPIO_NUM     13
+
+#define LED_GPIO_NUM      21
 
 WebServer server(80);
 WebSocketsServer webSocket(81);
@@ -66,9 +68,10 @@ void startCamera()
     .ledc_timer     = LEDC_TIMER_0,
     .ledc_channel   = LEDC_CHANNEL_0,
     .pixel_format   = PIXFORMAT_JPEG,
-    .frame_size     = FRAMESIZE_QVGA,
-    .jpeg_quality   = 15,
-    .fb_count       = 1,
+    .frame_size     = FRAMESIZE_240X240,
+    .jpeg_quality   = 10,
+    .fb_count       = 2,
+    .fb_location    = CAMERA_FB_IN_PSRAM,
     .grab_mode      = CAMERA_GRAB_WHEN_EMPTY
   };
 
@@ -211,21 +214,29 @@ void handleWebSocketMessage(uint8_t num, uint8_t *payload, size_t length)
 
   if (command == "forward")
   {
-    digitalWrite(M1, HIGH);
-    digitalWrite(M2, LOW);
+    digitalWrite(M1, LOW);
+    digitalWrite(M2, HIGH);
+    digitalWrite(M3, HIGH);
+    digitalWrite(M4, LOW);
   }
   else if (command == "backward")
   {
-    digitalWrite(M1, LOW);
-    digitalWrite(M2, HIGH);
+    digitalWrite(M1, HIGH);
+    digitalWrite(M2, LOW);
+    digitalWrite(M3, LOW);
+    digitalWrite(M4, HIGH);
   }
   else if (command == "left")
   {
+    digitalWrite(M1, HIGH);
+    digitalWrite(M2, LOW);
     digitalWrite(M3, HIGH);
     digitalWrite(M4, LOW);
   }
   else if (command == "right")
   {
+    digitalWrite(M1, LOW);
+    digitalWrite(M2, HIGH);
     digitalWrite(M3, LOW);
     digitalWrite(M4, HIGH);
   }
